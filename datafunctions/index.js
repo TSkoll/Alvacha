@@ -1,20 +1,28 @@
 const http = require('http');
-const wData = require('./data/data.json')
+const wFile = require('../data/waterconsum.json')
+const wData = JSON.parse(JSON.stringify(wFile));
+const dates = [];
 
 /*
 Function converts epoch time to a date object.
 @param gd = Given date as epochtime.
 @returns Date object.
 */
-function convertToDate(gd) {
-  // TODO
+function convertToDate() {
+    const d = new Date();
+    for(let jo of wData ) {
+        for (let objData of jo) {
+            d.setUTCSeconds(objData.date);
+            dates.push(d);
+        }
+    }
 }
 
 /*
 Function calculates the average water consumption per year.
 */
 function avgYearly() {
- // TODO
+    // TODO
 }
 
 /*
@@ -37,5 +45,7 @@ Function calculates the average water consumption per day.
 function avgDaily() {
     // TODO
 }
+
+
 
 
