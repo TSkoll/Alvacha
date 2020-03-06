@@ -1,5 +1,5 @@
 const fs = require('fs');
-const data = require('./data/output.json');
+const data = require('./data/2.json');
 const keys = Object.keys(data);
 
 for (let key of keys) {

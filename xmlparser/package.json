@@ -9,6 +9,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "read-excel-file": "^4.0.5",
     "read-xml": "^3.0.0"
   }
 }

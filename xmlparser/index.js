@@ -2,7 +2,7 @@ const readxml = require('read-excel-file/node');
 const fs = require('fs');
 
 let write = {};
-readxml('./xmlparser/data/v.data').then(rows => {
+readxml('./xmlparser/data/v2.data').then(rows => {
     for (let i = 6; i < rows.length; i++) {
         const data = rows[i];
 
