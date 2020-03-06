@@ -3,12 +3,12 @@
     <body>
         <h1>Yearly</h1>
         <canvas id="yearly"></canvas>
-        <h1>Latest</h1>
-        <canvas id="latest"></canvas>
+        <h1>Talonyhtio</h1>
+        <canvas id="building"></canvas>
         <script src="https://cdn.jsdelivr.net/npm/chart.js@2.8.0"></script>
         <script>
             var ctx = document.getElementById('yearly').getContext('2d');
-            var ctx2 = document.getElementById('latest').getContext('2d');
+            var ctx2 = document.getElementById('building').getContext('2d');
             var yearly = new Chart(ctx, {
                 // The type of chart we want to create
                 type: 'line',
@@ -31,22 +31,44 @@
                 options: {}
             });
 
-            var latest = new Chart(ctx2, {
+            var building = new Chart(ctx2, {
                 // The type of chart we want to create
                 type: 'line',
 
                 // The data for our dataset
                 data: {
-                    labels: ['', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'],
+                    labels: ['00:00', '01:00', '02:00', '03:00', '04:00', '05:00', '06:00', '07:00', '08:00', '09:00', '10:00', '11:00', '12:00'],
                     datasets: [{
-                        label: 'Talo 1',
+                        label: 'Test',
                         borderColor: 'rgb(255, 99, 132)',
-                        data: [0, 10, 5, 2, 20, 30, 45, 30, 20, 5, 10, 2]
+                        data: [
+                            0.24,
+                            0.239,
+                            0.239,
+                            0.24,
+                            0.239,
+                            0.239,
+                            0.24,
+                            0.239,
+                            0.239,
+                            0.24,
+                            0.239,
+                            0.239,
+                            0.239
+                        ]
                     }]
                 },
 
                 // Configuration options go here
-                options: {}
+                options: {
+                    scales: {
+            yAxes: [{
+                ticks: {
+                    beginAtZero: true
+                }
+            }]
+        }
+                }
             });
         </script>
     </body>
