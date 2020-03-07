@@ -18,8 +18,8 @@ Promise.all([
         const c = consumption[key];
         const m = metadata[key];
 
-        const grouped = groupData(c);
-
+        const grouped = groupData(c, 0);
+        
         totals[key] = {
             meta: m,
             values: grouped
@@ -58,10 +58,10 @@ Promise.all([
 
     for (let key of keys) {
         const c = consumption[key];
-        const daily = groupData(c);
-        const m = metadata[key]
+        const totals = groupData(c, 0);
+        const m = metadata[key];
 
-        const present = daily.map(x => x / m.people);
+        const present = totals.map(x => x / m.people);
 
         const title = document.createElement("h3");
         title.innerText = `Housing ${Number(key) + 1} - ${m.year}`;
@@ -74,7 +74,7 @@ Promise.all([
         const chart = new Chart(ctx, {
             type: "line",
             data: {
-                labels: Array.from(new Array(daily.length - 1).keys()),
+                labels: Array.from(new Array(totals.length - 1).keys()),
                 datasets: [{
                     label: "Consumption",
                     borderColor: "rgb(255, 0, 0)",
@@ -104,13 +104,32 @@ Promise.all([
     }
 })
 
-function groupData(data) {
+function groupData(data, switchkey) {
     const yearlyData = data.filter(x => x.date.getUTCFullYear() == 2019);
-    const values = yearlyData.map(x => x.value);
+    const monthlyData = [];
+    for(let i = 0; i < 13; i++) {
+        monthlyData[i] = yearlyData.filter(x => x.date.getUTCMonth() == i);
+    }
+    const yearvalues = yearlyData.map(x => x.value);
+    let monthvalues = monthlyData[0].map(x => x.value);
+    let values = [];
+    let resolution = 1;
 
+    switch(switchkey) {
+        case 0:
+            values = yearvalues;
+            resolution = 24 * 7;
+            break;
+        case 1:
+            values = monthvalues;
+            resolution = 1;
+            break;
+        default:
+            values = yearvalues;
+            resolution = 24 * 7;
+            break;
+    }
     let dataPoints = [];
-
-    const resolution = 24 * 7;
 
     for (let i = 0; i < values.length; i += resolution) {
         let total = 0;
@@ -125,7 +144,6 @@ function groupData(data) {
 
         dataPoints.push(total);
     }
-
     return dataPoints;
 }
 
