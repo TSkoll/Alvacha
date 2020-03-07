@@ -9,7 +9,8 @@ Promise.all([
     const keys = Object.keys(consumption);
 
     const totals = {};
-    const weekAverages = {};
+    const weekBuildings = {}
+    let maxWeeks = 0;
     for (let key of keys) {
         const c = consumption[key];
         const m = metadata[key];
@@ -20,9 +21,37 @@ Promise.all([
             meta: m,
             values: grouped
         }
+
+        if (grouped.length > maxWeeks)
+            maxWeeks = grouped.length
+
+        for (let i = 0; i < grouped.length; i++) {
+            if (!weekBuildings[i]) {
+                weekBuildings[i] = {
+                    count: 0,
+                    amount: 0,
+                    people: 0
+                };
+            }
+
+            weekBuildings[i].count++;
+            weekBuildings[i].amount += grouped[i];
+            weekBuildings[i].people += m.people;
+        }
     }
 
+    let avg = [];
+    const wBKeys = Object.keys(weekBuildings);
+    for (let i = 0; i < wBKeys.length; i++) {
+        const wBK = wBKeys[i];
+        const wB = weekBuildings[wBK];
 
+        avg.push(wB.amount / wB.people);
+    }
+    console.log({
+        weekBuildings,
+        avg
+    });
 
     for (let key of keys) {
         const c = consumption[key];
@@ -47,7 +76,22 @@ Promise.all([
                     label: "Consumption",
                     borderColor: "rgb(255, 0, 0)",
                     data: present
+                }, {
+                    label: "Average",
+                    borderColor: "rgb(0, 0, 255)",
+                    data: avg
                 }]
+            },
+            options: {
+                scales: {
+                    yAxes: [{
+                        display: true,
+                        ticks: {
+                            max: 2,
+                            stepsize: 0.1
+                        }
+                    }]
+                }
             }
         });
     }
