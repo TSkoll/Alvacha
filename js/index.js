@@ -1,4 +1,5 @@
 const chartDiv = document.getElementById("charts");
+
 Promise.all([
     fetchWaterConsum(),
     fetchMetaData()
@@ -59,15 +60,19 @@ Promise.all([
         const m = metadata[key]
 
         const present = daily.map(x => x / m.people);
+        const prices = present.map(x => convertCubicMetersToEuros(x));
 
         const title = document.createElement("h1");
         title.innerText = `Housing ${Number(key) + 1} - ${m.year}`;
         const canvas = document.createElement("canvas");
+        const priceCanvas  = document.createElement("canvas");
         canvas.id = key;
         chartDiv.appendChild(title);
         chartDiv.appendChild(canvas);
+        chartDiv.appendChild(priceCanvas);
 
         const ctx = canvas.getContext("2d");
+        const ctx2 = priceCanvas.getContext("2d");
         const chart = new Chart(ctx, {
             type: "line",
             data: {
@@ -88,6 +93,28 @@ Promise.all([
                         display: true,
                         ticks: {
                             max: 2,
+                            stepsize: 0.1
+                        }
+                    }]
+                }
+            }
+        });
+
+        const pricechart = new Chart(ctx2, {
+            type: "line",
+            data: {
+                labels: Array.from(new Array(daily.length).keys()),
+                datasets: [{
+                    label: "Price",
+                    borderColor: "rgb(0, 0, 0)",
+                    data: prices
+                }]
+            },
+            options: {
+                scales: {
+                    yAxes: [{
+                        display: true,
+                        ticks: {
                             stepsize: 0.1
                         }
                     }]
@@ -129,4 +156,10 @@ async function fetchWaterConsum() {
 async function fetchMetaData() {
     const data = await (await fetch("./meta.json")).json();
     return data;
+}
+
+function convertCubicMetersToEuros(consumption) {
+    let rate = 1.96;
+    let euros = consumption * rate;
+    return euros;
 }
