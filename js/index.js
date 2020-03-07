@@ -3,7 +3,7 @@ Promise.all([
     fetchWaterConsum(),
     fetchMetaData()
 ]).then(values => {
-    const consumption = values[0];
+    const consumption = convertEpochToDate(values[0]);
     const metadata = values[1];
 
     const keys = Object.keys(consumption);
@@ -119,6 +119,27 @@ function groupData(data) {
     }
 
     return dataPoints;
+}
+
+async function convertEpochToDate(data) {
+    const keys = Object.keys(data);
+    for(let key of keys) {
+        let d = data[key];
+        d = convertBuildingToDate(d);
+    }
+    return data;
+}
+
+async function convertBuildingToDate(building) {
+    for(let i = 0; i < building.length; i++) {
+        building[i].date = convertToDate(building[i].date);
+    }
+    return building;
+}
+
+async function convertToDate(date) {
+    const nDate = new Date(date);
+    return nDate;
 }
 
 async function fetchWaterConsum() {
