@@ -6,6 +6,8 @@ Promise.all([
     const consumption = convertEpochToDate(values[0]);
     const metadata = values[1];
 
+    console.log(consumption);
+
     const keys = Object.keys(consumption);
 
     const totals = {};
@@ -71,15 +73,15 @@ Promise.all([
         const chart = new Chart(ctx, {
             type: "line",
             data: {
-                labels: Array.from(new Array(daily.length).keys()),
+                labels: Array.from(new Array(daily.length - 1).keys()),
                 datasets: [{
                     label: "Consumption",
                     borderColor: "rgb(255, 0, 0)",
-                    data: present
+                    data: present.slice(0, present.length - 1)
                 }, {
                     label: "Average",
                     borderColor: "rgb(0, 0, 255)",
-                    data: avg
+                    data: avg.slice(0, avg.length - 1)
                 }]
             },
             options: {
@@ -98,7 +100,8 @@ Promise.all([
 })
 
 function groupData(data) {
-    const values = data.map(x => x.value);
+    const yearlyData = data.filter(x => x.date.getUTCFullYear() == 2019);
+    const values = yearlyData.map(x => x.value);
 
     let dataPoints = [];
 
@@ -121,9 +124,9 @@ function groupData(data) {
     return dataPoints;
 }
 
-async function convertEpochToDate(data) {
+function convertEpochToDate(data) {
     const keys = Object.keys(data);
-    for(let key of keys) {
+    for (let key of keys) {
         let d = data[key];
         d = convertBuildingToDate(d);
     }
@@ -131,13 +134,13 @@ async function convertEpochToDate(data) {
 }
 
 async function convertBuildingToDate(building) {
-    for(let i = 0; i < building.length; i++) {
+    for (let i = 0; i < building.length; i++) {
         building[i].date = convertToDate(building[i].date);
     }
     return building;
 }
 
-async function convertToDate(date) {
+function convertToDate(date) {
     const nDate = new Date(date);
     return nDate;
 }
