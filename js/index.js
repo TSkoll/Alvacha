@@ -21,6 +21,10 @@ Promise.all([
     generateCharts();
     const data = generateData();
     updateCharts(data);
+
+    for (let i = 1; i < charts.buildingCharts.length; i++) {
+        setElementShown(charts.buildingCharts[i].hostDiv, false)
+    }
 });
 
 function generateCharts() {
@@ -28,6 +32,8 @@ function generateCharts() {
 
     for (let key of keys) {
         const m = metadata[key];
+
+        const hostDiv = document.createElement("div");
 
         const title = document.createElement("h3")
         title.innerText = `Housing ${Number(key) + 1}`
@@ -40,10 +46,12 @@ function generateCharts() {
         Inhabitants: ${m.people || "Unknown"}
         `;
 
-        chartDiv.appendChild(title);
-        chartDiv.appendChild(description);
+        hostDiv.appendChild(title);
+        hostDiv.appendChild(description);
 
-        const ctx = createCanvas(chartDiv);
+        chartDiv.appendChild(hostDiv);
+
+        const ctx = createCanvas(hostDiv);
         const chart = drawChart(ctx,
             "line",
             null,
@@ -51,6 +59,7 @@ function generateCharts() {
 
 
         charts.buildingCharts.push({
+            hostDiv,
             ctx,
             chart
         });
@@ -101,7 +110,6 @@ function generateData() {
         const wBK = wBKeys[i];
         const wB = weekBuildings[wBK];
 
-        console.log(wB);
         avg.push(wB.amount / wB[comparer]);
     }
 
@@ -240,8 +248,7 @@ async function fetchMetaData() {
 }
 
 document.addEventListener('DOMContentLoaded', function() {
-    var elems = document.querySelectorAll('select');
-    var instances = M.FormSelect.init(elems);
+    M.AutoInit();
 });
 
 function changeChartData(value) {
@@ -274,4 +281,16 @@ function changeChartData(value) {
     charts.buildingCharts.forEach(item => {
         item.chart.update();
     })
+}
+
+function setElementShown(element, status) {
+    element.style.display = (status) ? "block" : "none";
+}
+
+function showChart(index) {
+    charts.buildingCharts.forEach(item => {
+        setElementShown(item.hostDiv, false);
+    });
+
+    setElementShown(charts.buildingCharts[Number(index)].hostDiv, true);
 }
