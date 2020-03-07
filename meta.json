@@ -1,0 +1,80 @@
+{
+    "0": {
+        "year": 1998,
+        "volume": 6491,
+        "apartments": 30,
+        "people": 28
+    },
+    "1": {
+        "year": 1996,
+        "volume": 3745,
+        "apartments": null,
+        "people": 33
+    },
+    "2": {
+        "year": 1983,
+        "volume": 4000,
+        "apartments": 17,
+        "people": 40
+    },
+    "3": {
+        "year": 2002,
+        "volume": 4970,
+        "apartments": 22,
+        "people": 32
+    },
+    "4": {
+        "year": 2005,
+        "volume": 4360,
+        "apartments": 17,
+        "people": 44
+    },
+    "5": {
+        "year": 198,
+        "volume": 3460,
+        "apartments": null,
+        "people": 28
+    },
+    "6": {
+        "year": 1998,
+        "volume": 5591,
+        "apartments": 22,
+        "people": 30
+    },
+    "7": {
+        "year": 2016,
+        "volume": 4532,
+        "apartments": 25,
+        "people": 38
+    },
+    "8": {
+        "year": 2017,
+        "volume": 4532,
+        "apartments": 25,
+        "people": 27
+    },
+    "9": {
+        "year": 1992,
+        "volume": 5940,
+        "apartments": 23,
+        "people": 29
+    },
+    "10": {
+        "year": 2002,
+        "volume": 9100,
+        "apartments": 37,
+        "people": 52
+    },
+    "11": {
+        "year": 1980,
+        "volume": 12700,
+        "apartments": 40,
+        "people": 40
+    },
+    "12": {
+        "year": 1991,
+        "volume": null,
+        "apartments": null,
+        "people": 24
+    }
+}
