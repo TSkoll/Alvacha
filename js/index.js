@@ -1,4 +1,5 @@
 const chartDiv = document.getElementById("charts");
+
 Promise.all([
     fetchWaterConsum(),
     fetchMetaData()
@@ -62,7 +63,7 @@ Promise.all([
 
         const present = daily.map(x => x / m.people);
 
-        const title = document.createElement("h1");
+        const title = document.createElement("h3");
         title.innerText = `Housing ${Number(key) + 1} - ${m.year}`;
         const canvas = document.createElement("canvas");
         canvas.id = key;
