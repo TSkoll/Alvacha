@@ -2,6 +2,7 @@ const chartDiv = document.getElementById("charts");
 let consumption;
 let metadata;
 let comparer = "people";
+let resolution;
 let charts = {
     buildingCharts: [],
     other: []
@@ -65,10 +66,10 @@ Promise.all([
 
     for (let key of keys) {
         const c = consumption[key];
-        const totals = groupData(c, 0, 0);
+        let totals = groupData(c, 0, 0);
         const m = metadata[key];
 
-        const present = totals.map(x => x / m["people"]);
+        let present = totals.map(x => x / m["people"]);
 
         const title = document.createElement("h3");
         title.innerText = `Housing ${Number(key) + 1} - ${m.year}`;
@@ -100,6 +101,9 @@ Promise.all([
                 onClick: function(evt) {
                     const element = chart.getElementAtEvent(evt);
                     pointIndex = chartClickEvent(evt, element);
+                    const pointDate = c[pointIndex * resolution].date;
+                    totals = groupData(c, 1, pointDate.getUTCMonth() + 1);
+                    console.log(totals);
                 }
             }
         )
@@ -282,7 +286,7 @@ function chartClickEvent(evt, element) {
     const keys = Object.keys(element[0]);
     let pIndex = 0;
     for (let key of keys) {
-        let temp = element[0].key;
+        let temp = element[0][key];
         if (key == '_index') {
             pIndex = temp;
             break;
