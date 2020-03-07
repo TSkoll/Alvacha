@@ -35,8 +35,8 @@ function generateCharts() {
         const description = document.createElement("p");
         description.innerText = `
         Built: ${m.year}
-        Volume: ${m.volume || "Unknown"} Square meters
-        Aparments: ${m.apartments || "Unknown"}
+        Volume: ${m.volume || "Unknown"} Cubic meters
+        Apartments: ${m.apartments || "Unknown"}
         Inhabitants: ${m.people || "Unknown"}
         `;
 
@@ -81,7 +81,8 @@ function generateData() {
                     count: 0,
                     amount: 0,
                     people: 0,
-                    volume: 0
+                    volume: 0,
+                    apartments: 0
                 }
             }
 
@@ -89,6 +90,7 @@ function generateData() {
             weekBuildings[i].amount += grouped[i];
             weekBuildings[i].people += m.people;
             weekBuildings[i].volume += m.volume;
+            weekBuildings[i].apartments += m.apartments;
         }
     }
 
@@ -99,6 +101,7 @@ function generateData() {
         const wBK = wBKeys[i];
         const wB = weekBuildings[wBK];
 
+        console.log(wB);
         avg.push(wB.amount / wB[comparer]);
     }
 
