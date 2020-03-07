@@ -69,7 +69,7 @@ Promise.all([
         const ctx = createCanvas(chartDiv);
         drawGraph(ctx,
             'line',
-            Array.from(new Array(daily.length - 1).keys()), [{
+            Array.from(new Array(totals.length - 1).keys()), [{
                     label: "Consumption",
                     borderColor: "rgb(255, 0, 0)",
                     data: present.slice(0, present.length - 1)
@@ -97,7 +97,6 @@ Promise.all([
         )
     }
 
-function groupData(data, switchkey) {
     totals.sort((a, b) => a.meta.year - b.meta.year);
 
     let totalConsumption = 0;
@@ -176,10 +175,10 @@ function drawGraph(ctx, type, labels, datasets, options) {
     });
 }
 
-function groupData(data) {
+function groupData(data, switchkey) {
     const yearlyData = data.filter(x => x.date.getUTCFullYear() == 2019);
     const monthlyData = [];
-    for(let i = 0; i < 13; i++) {
+    for (let i = 0; i < 13; i++) {
         monthlyData[i] = yearlyData.filter(x => x.date.getUTCMonth() == i);
     }
     const yearvalues = yearlyData.map(x => x.value);
@@ -187,7 +186,7 @@ function groupData(data) {
     let values = [];
     let resolution = 1;
 
-    switch(switchkey) {
+    switch (switchkey) {
         case 0:
             values = yearvalues;
             resolution = 24 * 7;
@@ -220,7 +219,7 @@ function groupData(data) {
 }
 
 function chartClickEvent(evt, element) {
-    if(!element || element.length == 0) return 0;
+    if (!element || element.length == 0) return 0;
     const keys = Object.keys(element[0]);
     let pIndex = 0;
     for (let key of keys) {
