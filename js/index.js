@@ -1,75 +1,88 @@
-var ctx = document.getElementById('yearly').getContext('2d');
-var ctx2 = document.getElementById('building').getContext('2d');
-var yearly = new Chart(ctx, {
-    // The type of chart we want to create
-    type: 'line',
+const chartDiv = document.getElementById("charts");
+Promise.all([
+    fetchWaterConsum(),
+    fetchMetaData()
+]).then(values => {
+    const consumption = values[0];
+    const metadata = values[1];
 
-    // The data for our dataset
-    data: {
-        labels: ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'],
-        datasets: [{
-            label: 'Talo 1',
-            borderColor: 'rgb(255, 99, 132)',
-            data: [0, 10, 5, 2, 20, 30, 45, 30, 20, 5, 10, 2]
-        }, {
-            label: 'Talo 2',
-            borderColor: '#FFFFF',
-            data: [0, 11, 15, 20, 25, 33, 40, 32, 21, 2, 5, 10]
-        }]
-    },
+    const keys = Object.keys(consumption);
 
-    // Configuration options go here
-    options: {}
-});
+    const totals = {};
+    const weekAverages = {};
+    for (let key of keys) {
+        const c = consumption[key];
+        const m = metadata[key];
 
-var building = new Chart(ctx2, {
-    // The type of chart we want to create
-    type: 'line',
+        const grouped = groupData(c);
 
-    // The data for our dataset
-    data: {
-        labels: ['00:00', '01:00', '02:00', '03:00', '04:00', '05:00', '06:00', '07:00', '08:00', '09:00', '10:00', '11:00', '12:00'],
-        datasets: [{
-            label: 'Test',
-            borderColor: 'rgb(255, 99, 132)',
-            data: []
-        }]
-    },
-
-    // Configuration options go here
-    options: {
-        scales: {
-            yAxes: [{
-                ticks: {
-                    beginAtZero: true
-                }
-            }]
+        totals[key] = {
+            meta: m,
+            values: grouped
         }
     }
-});
 
-fetch("./waterconsum.json")
-    .then(async data => {
-        const all = await data.json();
-        let values = all[12].map(x => x.value);
 
-        let dataPoints = [];
-        for (let i = 0; i < values.length; i += 24) {
-            let total = 0;
-            let count = 0;
-            for (let j = 0; j < 24; j++) {
-                if (values[i + j] == undefined)
-                    break;
 
-                total += values[i + j];
-                count++;
+    for (let key of keys) {
+        const c = consumption[key];
+        const daily = groupData(c);
+        const m = metadata[key]
+
+        const present = daily.map(x => x / m.people);
+
+        const title = document.createElement("h1");
+        title.innerText = `Housing ${Number(key) + 1} - ${m.year}`;
+        const canvas = document.createElement("canvas");
+        canvas.id = key;
+        chartDiv.appendChild(title);
+        chartDiv.appendChild(canvas);
+
+        const ctx = canvas.getContext("2d");
+        const chart = new Chart(ctx, {
+            type: "line",
+            data: {
+                labels: Array.from(new Array(daily.length).keys()),
+                datasets: [{
+                    label: "Consumption",
+                    borderColor: "rgb(255, 0, 0)",
+                    data: present
+                }]
             }
+        });
+    }
+})
 
-            dataPoints.push(total);
+function groupData(data) {
+    const values = data.map(x => x.value);
+
+    let dataPoints = [];
+
+    const resolution = 24 * 7;
+
+    for (let i = 0; i < values.length; i += resolution) {
+        let total = 0;
+        let count = 0;
+        for (let j = 0; j < resolution; j++) {
+            if (values[i + j] == undefined)
+                break;
+
+            total += values[i + j];
+            count++;
         }
 
-        console.log(dataPoints);
-        building.data.labels = Array.from(new Array(dataPoints.length).keys());
-        building.data.datasets[0].data = dataPoints;
-        building.update();
-    })
+        dataPoints.push(total);
+    }
+
+    return dataPoints;
+}
+
+async function fetchWaterConsum() {
+    const data = await (await fetch("./waterconsum.json")).json();
+    return data;
+}
+
+async function fetchMetaData() {
+    const data = await (await fetch("./meta.json")).json();
+    return data;
+}
