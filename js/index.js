@@ -1,5 +1,4 @@
 const chartDiv = document.getElementById("charts");
-
 Promise.all([
     fetchWaterConsum(),
     fetchMetaData()
