@@ -57,10 +57,10 @@ Promise.all([
 
     for (let key of keys) {
         const c = consumption[key];
-        const daily = groupData(c);
-        const m = metadata[key]
+        const totals = groupData(c, 0);
+        const m = metadata[key];
 
-        const present = daily.map(x => x / m.people);
+        const present = totals.map(x => x / m.people);
 
         const title = document.createElement("h3");
         title.innerText = `Housing ${Number(key) + 1} - ${m.year}`;
@@ -97,6 +97,7 @@ Promise.all([
         )
     }
 
+function groupData(data, switchkey) {
     totals.sort((a, b) => a.meta.year - b.meta.year);
 
     let totalConsumption = 0;
@@ -177,11 +178,30 @@ function drawGraph(ctx, type, labels, datasets, options) {
 
 function groupData(data) {
     const yearlyData = data.filter(x => x.date.getUTCFullYear() == 2019);
-    const values = yearlyData.map(x => x.value);
+    const monthlyData = [];
+    for(let i = 0; i < 13; i++) {
+        monthlyData[i] = yearlyData.filter(x => x.date.getUTCMonth() == i);
+    }
+    const yearvalues = yearlyData.map(x => x.value);
+    let monthvalues = monthlyData[0].map(x => x.value);
+    let values = [];
+    let resolution = 1;
 
+    switch(switchkey) {
+        case 0:
+            values = yearvalues;
+            resolution = 24 * 7;
+            break;
+        case 1:
+            values = monthvalues;
+            resolution = 1;
+            break;
+        default:
+            values = yearvalues;
+            resolution = 24 * 7;
+            break;
+    }
     let dataPoints = [];
-
-    const resolution = 24 * 7;
 
     for (let i = 0; i < values.length; i += resolution) {
         let total = 0;
@@ -196,11 +216,11 @@ function groupData(data) {
 
         dataPoints.push(total);
     }
-
     return dataPoints;
 }
 
 function chartClickEvent(evt, element) {
+    if(!element || element.length == 0) return 0;
     const keys = Object.keys(element[0]);
     let pIndex = 0;
     for (let key of keys) {
