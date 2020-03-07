@@ -9,9 +9,8 @@ Promise.all([
     console.log(consumption);
 
     const keys = Object.keys(consumption);
-    let pointIndex = 0;
 
-    const totals = {};
+    const totals = [];
     const weekBuildings = {}
     let maxWeeks = 0;
     for (let key of keys) {
@@ -20,10 +19,10 @@ Promise.all([
 
         const grouped = groupData(c);
 
-        totals[key] = {
+        totals.push({
             meta: m,
-            values: grouped
-        }
+            values: grouped.reduce((a, b) => a + b, 0)
+        });
 
         if (grouped.length > maxWeeks)
             maxWeeks = grouped.length
@@ -65,27 +64,22 @@ Promise.all([
 
         const title = document.createElement("h3");
         title.innerText = `Housing ${Number(key) + 1} - ${m.year}`;
-        const canvas = document.createElement("canvas");
-        canvas.id = key;
         chartDiv.appendChild(title);
-        chartDiv.appendChild(canvas);
 
-        const ctx = canvas.getContext("2d");
-        const chart = new Chart(ctx, {
-            type: "line",
-            data: {
-                labels: Array.from(new Array(daily.length - 1).keys()),
-                datasets: [{
+        const ctx = createCanvas(chartDiv);
+        drawGraph(ctx,
+            'line',
+            Array.from(new Array(daily.length - 1).keys()), [{
                     label: "Consumption",
                     borderColor: "rgb(255, 0, 0)",
                     data: present.slice(0, present.length - 1)
-                }, {
+                },
+                {
                     label: "Average",
                     borderColor: "rgb(0, 0, 255)",
                     data: avg.slice(0, avg.length - 1)
-                }]
-            },
-            options: {
+                }
+            ], {
                 scales: {
                     yAxes: [{
                         display: true,
@@ -100,9 +94,86 @@ Promise.all([
                     pointIndex = chartClickEvent(evt, element);
                 }
             }
-        });
+        )
     }
-})
+
+    totals.sort((a, b) => a.meta.year - b.meta.year);
+
+    let totalConsumption = 0;
+    let totalPeople = 0;
+    for (let thot of totals) {
+        totalConsumption += thot.values;
+        totalPeople += thot.meta.people;
+    }
+
+    const avgComsumption = totalConsumption / totalPeople;
+    const avgMin = avgComsumption * 0.75;
+    const avgMinYellow = avgComsumption * 0.5;
+    const avgMax = avgComsumption * 1.25;
+    const avgMaxYellow = avgComsumption * 1.5;
+
+    console.log({
+        avgMax,
+        avgMin,
+        avgMinYellow,
+        avgMaxYellow
+    })
+
+    const yearctx = createCanvas(chartDiv);
+    const presentData = totals.map(x => x.values / x.meta.people);
+
+    const yeargraph = drawGraph(yearctx, 'bar', totals.map(x => x.meta.year), [{
+            label: "Consumption (total)",
+            data: presentData,
+            backgroundColor: presentData.map(item => {
+                if (item > avgMaxYellow)
+                    return "rgba(255, 0, 0, 0.5)";
+                else if (item > avgMax)
+                    return "rgba(255, 125, 0, 0.5)";
+                else if (item < avgMinYellow)
+                    return "rgba(255, 125, 0, 0.5";
+                else if (item < avgMin)
+                    return "rgba(255, 0, 0, 0.5";
+                else
+                    return "rgba(0, 0, 200, 0.5";
+            })
+        },
+        {
+            label: "Max warning",
+            data: new Array(presentData.length).fill(avgMax),
+            type: "line",
+            pointRadius: 0,
+            backgroundColor: "rgba(0,0,0,0)",
+            borderColor: "rgb(255, 0, 0)"
+        },
+        {
+            label: "Min warning",
+            data: new Array(presentData.length).fill(avgMin),
+            type: "line",
+            pointRadius: 0,
+            backgroundColor: "rgba(0, 0, 0, 0)",
+            borderColor: "rgb(255, 0, 0)"
+        }
+    ]);
+    console.log(yeargraph);
+});
+
+function createCanvas(hostdiv) {
+    const e = document.createElement("canvas")
+    hostdiv.appendChild(e);
+    return e.getContext("2d");
+}
+
+function drawGraph(ctx, type, labels, datasets, options) {
+    return new Chart(ctx, {
+        type,
+        data: {
+            labels,
+            datasets
+        },
+        options
+    });
+}
 
 function groupData(data) {
     const yearlyData = data.filter(x => x.date.getUTCFullYear() == 2019);
@@ -132,9 +203,9 @@ function groupData(data) {
 function chartClickEvent(evt, element) {
     const keys = Object.keys(element[0]);
     let pIndex = 0;
-    for(let key of keys) {
+    for (let key of keys) {
         let temp = element[0][key];
-        if(key == '_index') {
+        if (key == '_index') {
             pIndex = temp;
             break;
         }
