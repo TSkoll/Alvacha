@@ -130,6 +130,7 @@ function groupData(data) {
 }
 
 function chartClickEvent(evt, element) {
+    if(!element || element.length == 0) return 0;
     const keys = Object.keys(element[0]);
     let pIndex = 0;
     for(let key of keys) {
