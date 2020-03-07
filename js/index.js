@@ -9,6 +9,7 @@ Promise.all([
     console.log(consumption);
 
     const keys = Object.keys(consumption);
+    let pointIndex = 0;
 
     const totals = {};
     const weekBuildings = {}
@@ -96,7 +97,7 @@ Promise.all([
                 },
                 onClick: function(evt) {
                     const element = chart.getElementAtEvent(evt);
-                    chartClickEvent(evt, element);
+                    pointIndex = chartClickEvent(evt, element);
                 }
             }
         });
@@ -129,8 +130,16 @@ function groupData(data) {
 }
 
 function chartClickEvent(evt, element) {
-    console.log("He he he, kutittaa.");
-    console.log(element);
+    const keys = Object.keys(element[0]);
+    let pIndex = 0;
+    for(let key of keys) {
+        let temp = element[0][key];
+        if(key == '_index') {
+            pIndex = temp;
+            break;
+        }
+    }
+    return pIndex;
 }
 
 function convertEpochToDate(data) {
