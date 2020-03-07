@@ -67,7 +67,7 @@ Promise.all([
         chartDiv.appendChild(title);
 
         const ctx = createCanvas(chartDiv);
-        drawGraph(ctx,
+        const chart = drawGraph(ctx,
             'line',
             Array.from(new Array(totals.length - 1).keys()), [{
                     label: "Consumption",
@@ -263,7 +263,7 @@ function chartClickEvent(evt, element) {
     const keys = Object.keys(element[0]);
     let pIndex = 0;
     for (let key of keys) {
-        let temp = element[0][key];
+        let temp = element[0].key;
         if (key == '_index') {
             pIndex = temp;
             break;
