@@ -1,5 +1,5 @@
 const chartDiv = document.getElementById("charts");
-let consumption;
+let consumption = {};
 let metadata;
 let comparer = "people";
 let charts = {
@@ -11,171 +11,126 @@ Promise.all([
     fetchWaterConsum(),
     fetchMetaData()
 ]).then(values => {
-    consumption = convertEpochToDate(values[0]);
+    const tempConsumption = convertEpochToDate(values[0]);
+    const tempKeys = Object.keys(tempConsumption);
+    for (let tempKey of tempKeys) {
+        consumption[tempKey] = values[0][tempKey].filter(x => x.date.getUTCFullYear() == 2019);
+    }
     metadata = values[1];
 
-    console.log(consumption);
+    generateCharts();
+    const data = generateData();
+    updateCharts(data);
+});
 
-    const keys = Object.keys(consumption);
-
-    const totals = [];
-    const weekBuildings = {}
-    let maxWeeks = 0;
-    for (let key of keys) {
-        const c = consumption[key];
-        const m = metadata[key];
-
-        const grouped = groupData(c);
-
-        totals.push({
-            meta: m,
-            values: grouped.reduce((a, b) => a + b, 0)
-        });
-
-        if (grouped.length > maxWeeks)
-            maxWeeks = grouped.length
-
-        for (let i = 0; i < grouped.length; i++) {
-            if (!weekBuildings[i]) {
-                weekBuildings[i] = {
-                    count: 0,
-                    amount: 0,
-                    people: 0
-                };
-            }
-
-            weekBuildings[i].count++;
-            weekBuildings[i].amount += grouped[i];
-            weekBuildings[i].people += m.people;
-        }
-    }
-
-    let avg = [];
-    const wBKeys = Object.keys(weekBuildings);
-    for (let i = 0; i < wBKeys.length; i++) {
-        const wBK = wBKeys[i];
-        const wB = weekBuildings[wBK];
-
-        avg.push(wB.amount / wB["people"]);
-    }
-    console.log({
-        weekBuildings,
-        avg
-    });
+function generateCharts() {
+    const keys = Object.keys(metadata);
 
     for (let key of keys) {
-        const c = consumption[key];
-        const totals = groupData(c, 0);
         const m = metadata[key];
 
-        const present = totals.map(x => x / m["people"]);
+        const title = document.createElement("h3")
+        title.innerText = `Housing ${Number(key) + 1}`
 
-        const title = document.createElement("h3");
-        title.innerText = `Housing ${Number(key) + 1} - ${m.year}`;
+        const description = document.createElement("p");
+        description.innerText = `
+        Built: ${m.year}
+        Volume: ${m.volume || "Unknown"} Square meters
+        Aparments: ${m.apartments || "Unknown"}
+        Inhabitants: ${m.people || "Unknown"}
+        `;
+
         chartDiv.appendChild(title);
+        chartDiv.appendChild(description);
 
         const ctx = createCanvas(chartDiv);
         const chart = drawChart(ctx,
-            'line',
-            Array.from(new Array(totals.length - 1).keys()), [{
-                    label: "Consumption",
-                    borderColor: "rgb(255, 0, 0)",
-                    data: present.slice(0, present.length - 1)
-                },
-                {
-                    label: "Average",
-                    borderColor: "rgb(0, 0, 255)",
-                    data: avg.slice(0, avg.length - 1)
-                }
-            ], {
-                scales: {
-                    yAxes: [{
-                        display: true,
-                        ticks: {
-                            max: 2,
-                            stepsize: 0.1
-                        }
-                    }]
-                },
-                onClick: function(evt) {
-                    const element = chart.getElementAtEvent(evt);
-                    pointIndex = chartClickEvent(evt, element);
-                }
-            }
-        )
+            "line",
+            null,
+            null);
+
 
         charts.buildingCharts.push({
             ctx,
             chart
         });
     }
+}
 
-    totals.sort((a, b) => a.meta.year - b.meta.year);
+function generateData() {
+    const keys = Object.keys(consumption);
 
-    let totalConsumption = 0;
-    let totalPeople = 0;
-    for (let thot of totals) {
-        totalConsumption += thot.values;
-        totalPeople += thot.meta.people;
+    const totals = [];
+    const weekBuildings = {}
+    let recent = [];
+    for (let key of keys) {
+        const c = consumption[key];
+        const grouped = groupData(c, 0);
+        const m = metadata[key];
+
+        totals.push({
+            meta: m,
+            values: grouped.reduce((a, b) => a + b, 0)
+        });
+
+        recent.push(grouped.map(x => x / m[comparer]));
+
+        for (let i = 0; i < grouped.length; i++) {
+            if (!weekBuildings[i]) {
+                weekBuildings[i] = {
+                    count: 0,
+                    amount: 0,
+                    people: 0,
+                    volume: 0
+                }
+            }
+
+            weekBuildings[i].count++;
+            weekBuildings[i].amount += grouped[i];
+            weekBuildings[i].people += m.people;
+            weekBuildings[i].volume += m.volume;
+        }
     }
 
-    const avgComsumption = totalConsumption / totalPeople;
-    const avgMin = avgComsumption * 0.75;
-    const avgMinYellow = avgComsumption * 0.5;
-    const avgMax = avgComsumption * 1.25;
-    const avgMaxYellow = avgComsumption * 1.5;
+    let avg = [];
 
-    console.log({
-        avgMax,
-        avgMin,
-        avgMinYellow,
-        avgMaxYellow
-    })
+    const wBKeys = Object.keys(weekBuildings);
+    for (let i = 0; i < wBKeys.length; i++) {
+        const wBK = wBKeys[i];
+        const wB = weekBuildings[wBK];
 
-    const yearctx = createCanvas(chartDiv);
-    const presentData = totals.map(x => x.values / x.meta.people);
+        avg.push(wB.amount / wB[comparer]);
+    }
 
-    const yeargraph = drawChart(yearctx, 'bar', totals.map(x => x.meta.year), [{
-            label: "Consumption (total)",
-            data: presentData,
-            backgroundColor: presentData.map(item => {
-                if (item > avgMaxYellow)
-                    return "rgba(255, 0, 0, 0.5)";
-                else if (item > avgMax)
-                    return "rgba(255, 125, 0, 0.5)";
-                else if (item < avgMinYellow)
-                    return "rgba(255, 125, 0, 0.5";
-                else if (item < avgMin)
-                    return "rgba(255, 0, 0, 0.5";
-                else
-                    return "rgba(0, 0, 200, 0.5";
-            })
-        },
-        {
-            label: "Max warning",
-            data: new Array(presentData.length).fill(avgMax),
-            type: "line",
-            pointRadius: 0,
-            backgroundColor: "rgba(0,0,0,0)",
+    return {
+        avg,
+        totals,
+        weekBuildings,
+        recent
+    }
+}
+
+function updateCharts(data) {
+    charts.buildingCharts.forEach((item, i) => {
+        const chart = item.chart;
+
+        chart.data.labels = Array.from(new Array(data.recent[i].length - 1).keys());
+        chart.data.datasets = [];
+        chart.data.datasets.push({
+            label: "Consumption",
+            data: data.recent[i].slice(0, data.recent[i].length - 1),
             borderColor: "rgb(255, 0, 0)"
-        },
-        {
-            label: "Min warning",
-            data: new Array(presentData.length).fill(avgMin),
-            type: "line",
-            pointRadius: 0,
-            backgroundColor: "rgba(0, 0, 0, 0)",
-            borderColor: "rgb(255, 0, 0)"
-        }
-    ]);
+        });
 
-    charts.other.push({
-        ctx: yearctx,
-        chart: yeargraph
+        chart.data.datasets.push({
+            label: "Average",
+            data: data.avg.slice(0, data.avg.length - 1),
+            borderColor: "rgb(0,0,255)"
+        })
+
+        chart.update();
     });
-
-    console.log(yeargraph);
-});
+}
 
 function createCanvas(hostdiv) {
     const e = document.createElement("canvas")
@@ -195,12 +150,11 @@ function drawChart(ctx, type, labels, datasets, options) {
 }
 
 function groupData(data, switchkey) {
-    const yearlyData = data.filter(x => x.date.getUTCFullYear() == 2019);
     const monthlyData = [];
     for (let i = 0; i < 13; i++) {
-        monthlyData[i] = yearlyData.filter(x => x.date.getUTCMonth() == i);
+        monthlyData[i] = data.filter(x => x.date.getUTCMonth() == i);
     }
-    const yearvalues = yearlyData.map(x => x.value);
+    const yearvalues = data.map(x => x.value);
     let monthvalues = monthlyData[0].map(x => x.value);
     let values = [];
     let resolution = 1;
@@ -287,4 +241,34 @@ document.addEventListener('DOMContentLoaded', function() {
     var instances = M.FormSelect.init(elems);
 });
 
-function changeChartData(value) {}
+function changeChartData(value) {
+    console.log(value);
+    let data;
+    switch (value) {
+        case "1":
+            comparer = "apartments";
+
+            data = generateData();
+            updateCharts(data);
+
+            break;
+        case "2":
+            comparer = "volume";
+
+            data = generateData();
+            updateCharts(data);
+
+            break;
+        case "3":
+            comparer = "people";
+
+            data = generateData();
+            updateCharts(data);
+
+            break;
+    }
+
+    charts.buildingCharts.forEach(item => {
+        item.chart.update();
+    })
+}
