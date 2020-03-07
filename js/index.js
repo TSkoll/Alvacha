@@ -6,8 +6,6 @@ Promise.all([
     const consumption = convertEpochToDate(values[0]);
     const metadata = values[1];
 
-    console.log(consumption);
-
     const keys = Object.keys(consumption);
 
     const totals = {};
@@ -21,7 +19,7 @@ Promise.all([
 
         totals[key] = {
             meta: m,
-            values: grouped
+            values: grouped.reduce((a, b) => a + b, 0)
         }
 
         if (grouped.length > maxWeeks)
@@ -32,15 +30,19 @@ Promise.all([
                 weekBuildings[i] = {
                     count: 0,
                     amount: 0,
-                    people: 0
+                    people: 0,
+                    volume: 0,
                 };
             }
 
             weekBuildings[i].count++;
             weekBuildings[i].amount += grouped[i];
             weekBuildings[i].people += m.people;
+            weekBuildings[i].volume += m.volume;
         }
     }
+
+    console.log(totals)
 
     let avg = [];
     const wBKeys = Object.keys(weekBuildings);
@@ -50,12 +52,71 @@ Promise.all([
 
         avg.push(wB.amount / wB.people);
     }
-    console.log({
-        weekBuildings,
-        avg
-    });
 
+    let drawData = [];
     for (let key of keys) {
+        const t = totals[key];
+        const tma = t.meta.apartments;
+        const tvp = t.meta.people;
+        const tv = t.values;
+
+        const avgPeople = tvp / tma;
+        const avgConsumption = tv / tma / avgPeople;
+
+        drawData.push({
+            avgPeople,
+            avgConsumption
+        });
+    }
+
+    const canvas = document.createElement("canvas");
+    chartDiv.appendChild(canvas);
+    const ctx = canvas.getContext("2d");
+
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: Array.from(new Array(drawData.length).keys()),
+            datasets: [{
+                    label: "Avg Consumption",
+                    data: drawData.map(x => x.avgConsumption),
+                    backgroundColor: "rgba(0, 0, 255, 0.1)"
+                },
+                {
+                    label: "Avg people",
+                    data: drawData.map(x => x.avgPeople),
+                    yAxisID: 'B',
+                    type: 'line',
+                    borderColor: "rgb(255, 0, 0)"
+                }
+            ]
+        },
+        options: {
+            scales: {
+                yAxes: [{
+                        id: 'A',
+                        type: 'linear',
+                        position: 'left',
+                        ticks: {
+                            max: 75,
+                            stepsize: 10
+                        }
+                    },
+                    {
+                        id: 'B',
+                        type: 'linear',
+                        position: 'right',
+                        ticks: {
+                            max: 5,
+                            stepsize: 1
+                        }
+                    }
+                ]
+            }
+        }
+    })
+
+    /*for (let key of keys) {
         const c = consumption[key];
         const daily = groupData(c);
         const m = metadata[key]
@@ -96,7 +157,7 @@ Promise.all([
                 }
             }
         });
-    }
+    }*/
 })
 
 function groupData(data) {
