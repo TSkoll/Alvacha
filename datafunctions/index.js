@@ -1,21 +1,23 @@
 const http = require('http');
 const wFile = require('../data/waterconsum.json')
-const wData = JSON.parse(JSON.stringify(wFile));
-const dates = [];
+const wData = JSON.parse(wFile);
+const data = [[]];
+for(let obj of wData) {
+    data.push(obj);
+    convertToDate(obj);
+}
+const 
 
 /*
 Function converts epoch time to a date object.
 @param gd = Given date as epochtime.
-@returns Date object.
+@returns Date object.{}
 */
-function convertToDate() {
+function convertToDate(building) {
     const d = new Date();
-    for(let jo of wData ) {
-        for (let objData of jo) {
-            d.setUTCSeconds(objData.date);
-            dates.push(d);
-        }
-    }
+    for (let objData of wData[building]) {
+        d.setUTCSeconds(objData.date);
+        data[building].date = d;    }
 }
 
 /*
