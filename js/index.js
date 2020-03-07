@@ -17,7 +17,7 @@ Promise.all([
         const c = consumption[key];
         const m = metadata[key];
 
-        const grouped = groupData(c);
+        const grouped = groupData(c, 0, 0);
 
         totals.push({
             meta: m,
@@ -57,7 +57,7 @@ Promise.all([
 
     for (let key of keys) {
         const c = consumption[key];
-        const totals = groupData(c, 0);
+        const totals = groupData(c, 0, 0);
         const m = metadata[key];
 
         const present = totals.map(x => x / m.people);
@@ -175,16 +175,56 @@ function drawGraph(ctx, type, labels, datasets, options) {
     });
 }
 
-function groupData(data, switchkey) {
+function groupData(data, switchkey, month) {
     const yearlyData = data.filter(x => x.date.getUTCFullYear() == 2019);
     const monthlyData = [];
-    for (let i = 0; i < 13; i++) {
+    for(let i = 0; i < 13; i++) {
         monthlyData[i] = yearlyData.filter(x => x.date.getUTCMonth() == i);
     }
     const yearvalues = yearlyData.map(x => x.value);
-    let monthvalues = monthlyData[0].map(x => x.value);
-    let values = [];
-    let resolution = 1;
+    let monthvalues = [];
+    switch(month) {
+        case 0:
+            break;
+        case 1:
+            monthvalues = monthlyData[0].map(x => x.value);
+            break;
+        case 2:
+            monthvalues = monthlyData[1].map(x => x.value);
+            break;
+        case 3:
+            monthvalues = monthlyData[2].map(x => x.value);
+            break;
+        case 4:
+            monthvalues = monthlyData[3].map(x => x.value);
+            break;
+        case 5:
+            monthvalues = monthlyData[4].map(x => x.value);
+            break;
+        case 6:
+            monthvalues = monthlyData[5].map(x => x.value);
+            break;
+        case 7:
+            monthvalues = monthlyData[6].map(x => x.value);
+            break;
+        case 8:
+            monthvalues = monthlyData[7].map(x => x.value);
+            break;
+        case 9:
+            monthvalues = monthlyData[8].map(x => x.value);
+            break;
+        case 10:
+            monthvalues = monthlyData[9].map(x => x.value);
+            break; 
+        case 11:
+            monthvalues = monthlyData[10].map(x => x.value);
+            break;
+        case 12:
+            monthvalues = monthlyData[11].map(x => x.value);
+            break;
+        default:
+            break;
+    }
 
     switch (switchkey) {
         case 0:
