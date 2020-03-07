@@ -101,7 +101,7 @@ Promise.all([
         });
 
         const pricechart = new Chart(ctx2, {
-            type: "line",
+            type: "bar",
             data: {
                 labels: Array.from(new Array(daily.length).keys()),
                 datasets: [{
@@ -115,7 +115,7 @@ Promise.all([
                     yAxes: [{
                         display: true,
                         ticks: {
-                            stepsize: 0.1
+                            stepsize: 1
                         }
                     }]
                 }
