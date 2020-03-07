@@ -1,10 +1,18 @@
 const chartDiv = document.getElementById("charts");
+let consumption;
+let metadata;
+let comparer = "people";
+let charts = {
+    buildingCharts: [],
+    other: []
+}
+
 Promise.all([
     fetchWaterConsum(),
     fetchMetaData()
 ]).then(values => {
-    const consumption = convertEpochToDate(values[0]);
-    const metadata = values[1];
+    consumption = convertEpochToDate(values[0]);
+    metadata = values[1];
 
     console.log(consumption);
 
@@ -48,7 +56,7 @@ Promise.all([
         const wBK = wBKeys[i];
         const wB = weekBuildings[wBK];
 
-        avg.push(wB.amount / wB.people);
+        avg.push(wB.amount / wB["people"]);
     }
     console.log({
         weekBuildings,
@@ -60,14 +68,14 @@ Promise.all([
         const totals = groupData(c, 0);
         const m = metadata[key];
 
-        const present = totals.map(x => x / m.people);
+        const present = totals.map(x => x / m["people"]);
 
         const title = document.createElement("h3");
         title.innerText = `Housing ${Number(key) + 1} - ${m.year}`;
         chartDiv.appendChild(title);
 
         const ctx = createCanvas(chartDiv);
-        drawGraph(ctx,
+        const chart = drawChart(ctx,
             'line',
             Array.from(new Array(totals.length - 1).keys()), [{
                     label: "Consumption",
@@ -95,6 +103,11 @@ Promise.all([
                 }
             }
         )
+
+        charts.buildingCharts.push({
+            ctx,
+            chart
+        });
     }
 
     totals.sort((a, b) => a.meta.year - b.meta.year);
@@ -122,7 +135,7 @@ Promise.all([
     const yearctx = createCanvas(chartDiv);
     const presentData = totals.map(x => x.values / x.meta.people);
 
-    const yeargraph = drawGraph(yearctx, 'bar', totals.map(x => x.meta.year), [{
+    const yeargraph = drawChart(yearctx, 'bar', totals.map(x => x.meta.year), [{
             label: "Consumption (total)",
             data: presentData,
             backgroundColor: presentData.map(item => {
@@ -155,6 +168,12 @@ Promise.all([
             borderColor: "rgb(255, 0, 0)"
         }
     ]);
+
+    charts.other.push({
+        ctx: yearctx,
+        chart: yeargraph
+    });
+
     console.log(yeargraph);
 });
 
@@ -164,7 +183,7 @@ function createCanvas(hostdiv) {
     return e.getContext("2d");
 }
 
-function drawGraph(ctx, type, labels, datasets, options) {
+function drawChart(ctx, type, labels, datasets, options) {
     return new Chart(ctx, {
         type,
         data: {
@@ -262,3 +281,10 @@ async function fetchMetaData() {
     const data = await (await fetch("./meta.json")).json();
     return data;
 }
+
+document.addEventListener('DOMContentLoaded', function() {
+    var elems = document.querySelectorAll('select');
+    var instances = M.FormSelect.init(elems);
+});
+
+function changeChartData(value) {}
