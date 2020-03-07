@@ -93,6 +93,10 @@ Promise.all([
                             stepsize: 0.1
                         }
                     }]
+                },
+                onClick: function(evt) {
+                    const element = chart.getElementAtEvent(evt);
+                    chartClickEvent(evt, element);
                 }
             }
         });
@@ -122,6 +126,11 @@ function groupData(data) {
     }
 
     return dataPoints;
+}
+
+function chartClickEvent(evt, element) {
+    console.log("He he he, kutittaa.");
+    console.log(element);
 }
 
 function convertEpochToDate(data) {
