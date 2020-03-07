@@ -1,14 +1,31 @@
 <!DOCTYPE HTML>
 <html>
+
 <head>
     <title>Conthrive2020 - Alva</title>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
     <link rel="stylesheet" href="style.css" />
 </head>
-<body>
-    <div id="charts">
 
+<body>
+    <div class="container">
+        <div class="row">
+            <div class="input-field col s12">
+                <select onchange="changeChartData(this.value)">
+                    <option value="1">Apartments</option>
+                    <option value="2">Volume</option>
+                    <option value="3" selected>Inhabitants</option>
+                </select>
+                <label>Compare to</label>
+            </div>
+        </div>
+
+        <div id="charts">
+
+        </div>
     </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@2.8.0"></script>
     <script src="./js/index.js"></script>
 </body>
