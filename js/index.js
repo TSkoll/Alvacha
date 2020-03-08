@@ -1,7 +1,9 @@
 const chartDiv = document.getElementById("charts");
 let consumption = {};
 let metadata;
+let c;
 let comparer = "people";
+let resolution;
 let charts = {
     buildingCharts: [],
     other: []
@@ -55,7 +57,67 @@ function generateCharts() {
         const chart = drawChart(ctx,
             "line",
             null,
-            null);
+            null,
+            {
+                onClick: function(evt) {
+                    console.log('Clicked');
+                    const element = chart.getElementAtEvent(evt);
+                    console.log(element)
+
+                    const pointIndex = chartClickEvent(evt, element);
+                    const pointDate = c[pointIndex * resolution].date;
+
+                    const monthlyTotals = groupData(c, 1, pointDate.getUTCMonth() + 1);
+                    console.log(monthlyTotals);
+
+                    console.log(chart);
+                    chart.data.labels = Array.from(new Array(monthlyTotals.length).keys());
+                    chart.data.datasets.forEach(set => {
+                        set.data.forEach(item => {
+                            chart.data.datasets[0].data.pop();
+                        })
+                    })
+
+                    chart.data.datasets[1].data = [];
+
+                    monthlyTotals.forEach(item => {
+                        chart.data.datasets[0].data.push(item)
+                    })
+                    chart.update();
+                    /*chart.data.datasets.push({
+                        label: "Consumption over week",
+                        data: monthlyTotals,
+                        borderColor: "rgb(255, 0, 0)"
+                    })*/
+
+
+                    /*pointIndex = chartClickEvent(evt, element);
+                    const pointDate = c[pointIndex * resolution].date;
+                    console.log(pointDate.getUTCMonth());
+                    const data = generateData();
+                    const avg = data.avg;
+                    const weekBuildings = data.weekBuildings;
+                    const recent = data.recent;
+                    const monthlyTotals = groupData(c, 1, pointDate.getUTCMonth() + 1);
+                    const chart = item.chart;
+                    chart.data.labels = Array.from(new Array(data.recent[i].length - 1).keys());
+                    chart.data.datasets = [];
+                    chart.data.datasets.push({
+                        label: "Consumption",
+                        data: data.recent[i].slice(0, data.recent[i].length - 1),
+                        borderColor: "rgb(255, 0, 0)"
+                    });
+            
+                    chart.data.datasets.push({
+                        label: "Average",
+                        data: data.avg.slice(0, data.avg.length - 1),
+                        borderColor: "rgb(0,0,255)"
+                    })
+            
+                    chart.update();*/
+            }
+        }
+        );
 
 
         charts.buildingCharts.push({
@@ -66,6 +128,9 @@ function generateCharts() {
     }
 }
 
+
+
+
 function generateData() {
     const keys = Object.keys(consumption);
 
@@ -73,8 +138,8 @@ function generateData() {
     const weekBuildings = {}
     let recent = [];
     for (let key of keys) {
-        const c = consumption[key];
-        const grouped = groupData(c, 0);
+        c = consumption[key];
+        const grouped = groupData(c, 0, 0);
         const m = metadata[key];
 
         totals.push({
@@ -94,6 +159,7 @@ function generateData() {
                     apartments: 0
                 }
             }
+            
 
             weekBuildings[i].count++;
             weekBuildings[i].amount += grouped[i];
@@ -160,15 +226,56 @@ function drawChart(ctx, type, labels, datasets, options) {
     });
 }
 
-function groupData(data, switchkey) {
+function groupData(data, switchkey, month) {
+    const yearlyData = data.filter(x => x.date.getUTCFullYear() == 2019);
     const monthlyData = [];
-    for (let i = 0; i < 13; i++) {
-        monthlyData[i] = data.filter(x => x.date.getUTCMonth() == i);
+    for(let i = 0; i < 13; i++) {
+        monthlyData[i] = yearlyData.filter(x => x.date.getUTCMonth() == i);
     }
-    const yearvalues = data.map(x => x.value);
-    let monthvalues = monthlyData[0].map(x => x.value);
-    let values = [];
-    let resolution = 1;
+    const yearvalues = yearlyData.map(x => x.value);
+    let monthvalues = [];
+    switch(month) {
+        case 0:
+            break;
+        case 1:
+            monthvalues = monthlyData[0].map(x => x.value);
+            break;
+        case 2:
+            monthvalues = monthlyData[1].map(x => x.value);
+            break;
+        case 3:
+            monthvalues = monthlyData[2].map(x => x.value);
+            break;
+        case 4:
+            monthvalues = monthlyData[3].map(x => x.value);
+            break;
+        case 5:
+            monthvalues = monthlyData[4].map(x => x.value);
+            break;
+        case 6:
+            monthvalues = monthlyData[5].map(x => x.value);
+            break;
+        case 7:
+            monthvalues = monthlyData[6].map(x => x.value);
+            break;
+        case 8:
+            monthvalues = monthlyData[7].map(x => x.value);
+            break;
+        case 9:
+            monthvalues = monthlyData[8].map(x => x.value);
+            break;
+        case 10:
+            monthvalues = monthlyData[9].map(x => x.value);
+            break; 
+        case 11:
+            monthvalues = monthlyData[10].map(x => x.value);
+            break;
+        case 12:
+            monthvalues = monthlyData[11].map(x => x.value);
+            break;
+        default:
+            break;
+    }
 
     switch (switchkey) {
         case 0:
