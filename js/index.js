@@ -1,9 +1,13 @@
 const chartDiv = document.getElementById("charts");
+const tableDiv = document.getElementById("table");
+setElementShown(tableDiv, false);
+
 let consumption = {};
 let metadata;
 let c;
 let comparer = "people";
 let resolution;
+
 let charts = {
     buildingCharts: [],
     other: []
@@ -57,8 +61,7 @@ function generateCharts() {
         const chart = drawChart(ctx,
             "line",
             null,
-            null,
-            {
+            null, {
                 onClick: function(evt) {
                     console.log('Clicked');
                     const element = chart.getElementAtEvent(evt);
@@ -115,8 +118,8 @@ function generateCharts() {
                     })
             
                     chart.update();*/
+                }
             }
-        }
         );
 
 
@@ -159,7 +162,7 @@ function generateData() {
                     apartments: 0
                 }
             }
-            
+
 
             weekBuildings[i].count++;
             weekBuildings[i].amount += grouped[i];
@@ -229,12 +232,12 @@ function drawChart(ctx, type, labels, datasets, options) {
 function groupData(data, switchkey, month) {
     const yearlyData = data.filter(x => x.date.getUTCFullYear() == 2019);
     const monthlyData = [];
-    for(let i = 0; i < 13; i++) {
+    for (let i = 0; i < 13; i++) {
         monthlyData[i] = yearlyData.filter(x => x.date.getUTCMonth() == i);
     }
     const yearvalues = yearlyData.map(x => x.value);
     let monthvalues = [];
-    switch(month) {
+    switch (month) {
         case 0:
             break;
         case 1:
@@ -266,7 +269,7 @@ function groupData(data, switchkey, month) {
             break;
         case 10:
             monthvalues = monthlyData[9].map(x => x.value);
-            break; 
+            break;
         case 11:
             monthvalues = monthlyData[10].map(x => x.value);
             break;
@@ -367,6 +370,8 @@ function changeChartData(value) {
 
             data = generateData();
             updateCharts(data);
+            setElementShown(chartDiv, true);
+            setElementShown(tableDiv, false);
 
             break;
         case "2":
@@ -374,6 +379,8 @@ function changeChartData(value) {
 
             data = generateData();
             updateCharts(data);
+            setElementShown(chartDiv, true);
+            setElementShown(tableDiv, false);
 
             break;
         case "3":
@@ -381,7 +388,14 @@ function changeChartData(value) {
 
             data = generateData();
             updateCharts(data);
+            setElementShown(chartDiv, true);
+            setElementShown(tableDiv, false);
 
+            break;
+
+        case "4":
+            setElementShown(chartDiv, false);
+            setElementShown(tableDiv, true);
             break;
     }
 
