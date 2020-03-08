@@ -415,3 +415,69 @@ function showChart(index) {
 
     setElementShown(charts.buildingCharts[Number(index)].hostDiv, true);
 }
+
+const barcanvas = document.getElementById("bargraph");
+const barctx = barcanvas.getContext("2d");
+const bardata = [{
+    h: 1,
+    p: 26
+}, {
+    h: 2,
+    p: 10
+}, {
+    h: 3,
+    p: 30
+}, {
+    h: 4,
+    p: 10
+}, {
+    h: 5,
+    p: 29
+}, {
+    h: 6,
+    p: 34
+}, {
+    h: 7,
+    p: 20
+}, {
+    h: 8,
+    p: 18
+}, {
+    h: 9,
+    p: 18
+}, {
+    h: 10,
+    p: 28
+}, {
+    h: 11,
+    p: 30
+}, {
+    h: 12,
+    p: 22
+}, {
+    h: 13,
+    p: 39
+}]
+
+bardata.sort((a, b) => b.p - a.p);
+
+const barchart = new Chart(barctx, {
+    type: "bar",
+    data: {
+        labels: bardata.map(x => x.h),
+        datasets: [{
+            label: "Points",
+            data: bardata.map(x => x.p),
+            backgroundColor: ["rgba(255, 0, 0, 0.4)", "rgba(255, 120, 0, 0.4)", "rgba(0, 255, 0, 0.4)", null, null, null, null, null, null, "rgba(255, 120, 0, 0.4)", "rgba(255, 120, 0, 0.4)", "rgba(255, 0, 0, 0.4)", "rgba(255, 0, 0, 0.4)"]
+        }]
+    },
+    options: {
+        scales: {
+            yAxes: [{
+                ticks: {
+                    beginAtZero: true
+                }
+            }]
+        }
+    }
+})
