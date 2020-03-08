@@ -1,6 +1,7 @@
 const chartDiv = document.getElementById("charts");
 let consumption = {};
 let metadata;
+let zoomFlag = false;
 let c;
 let comparer = "people";
 let resolution;
@@ -60,18 +61,25 @@ function generateCharts() {
             null,
             {
                 onClick: function(evt) {
+                    
                     console.log('Clicked');
+                    if(zoomFlag) {
+                        const oldData = generateData();
+                        updateCharts(oldData);       
+                        zoomFlag = false;
+                        return;
+                    }
                     const element = chart.getElementAtEvent(evt);
-                    console.log(element)
-
                     const pointIndex = chartClickEvent(evt, element);
+                    if(pointIndex < 0) {
+                        pointIndex = 0;
+                        return;
+                    }
                     const pointDate = c[pointIndex * resolution].date;
+                    console.log(getNumberOfWeek(pointDate));
 
-                    const monthlyTotals = groupData(c, 1, pointDate.getUTCMonth() + 1);
-                    console.log(monthlyTotals);
-
-                    console.log(chart);
-                    chart.data.labels = Array.from(new Array(monthlyTotals.length).keys());
+                    const monthlyTotals = groupData(c, 2, pointDate.getUTCMonth() + 1, getNumberOfWeek(pointDate));
+                    chart.data.labels = Array.from(new Array(monthlyTotals.length - 1).keys());
                     chart.data.datasets.forEach(set => {
                         set.data.forEach(item => {
                             chart.data.datasets[0].data.pop();
@@ -84,37 +92,7 @@ function generateCharts() {
                         chart.data.datasets[0].data.push(item)
                     })
                     chart.update();
-                    /*chart.data.datasets.push({
-                        label: "Consumption over week",
-                        data: monthlyTotals,
-                        borderColor: "rgb(255, 0, 0)"
-                    })*/
-
-
-                    /*pointIndex = chartClickEvent(evt, element);
-                    const pointDate = c[pointIndex * resolution].date;
-                    console.log(pointDate.getUTCMonth());
-                    const data = generateData();
-                    const avg = data.avg;
-                    const weekBuildings = data.weekBuildings;
-                    const recent = data.recent;
-                    const monthlyTotals = groupData(c, 1, pointDate.getUTCMonth() + 1);
-                    const chart = item.chart;
-                    chart.data.labels = Array.from(new Array(data.recent[i].length - 1).keys());
-                    chart.data.datasets = [];
-                    chart.data.datasets.push({
-                        label: "Consumption",
-                        data: data.recent[i].slice(0, data.recent[i].length - 1),
-                        borderColor: "rgb(255, 0, 0)"
-                    });
-            
-                    chart.data.datasets.push({
-                        label: "Average",
-                        data: data.avg.slice(0, data.avg.length - 1),
-                        borderColor: "rgb(0,0,255)"
-                    })
-            
-                    chart.update();*/
+                    zoomFlag = true;
             }
         }
         );
@@ -128,7 +106,11 @@ function generateCharts() {
     }
 }
 
-
+function getNumberOfWeek(date) {
+    const firstDayOfYear = new Date(date.getUTCFullYear(), 0, 1);
+    const pastDaysOfYear = (date - firstDayOfYear) / 86400000;
+    return Math.ceil((pastDaysOfYear + firstDayOfYear.getDay() + 1) / 7);
+}
 
 
 function generateData() {
@@ -139,7 +121,7 @@ function generateData() {
     let recent = [];
     for (let key of keys) {
         c = consumption[key];
-        const grouped = groupData(c, 0, 0);
+        const grouped = groupData(c, 0, 0, 0);
         const m = metadata[key];
 
         totals.push({
@@ -226,7 +208,7 @@ function drawChart(ctx, type, labels, datasets, options) {
     });
 }
 
-function groupData(data, switchkey, month) {
+function groupData(data, switchkey, month, week) {
     const yearlyData = data.filter(x => x.date.getUTCFullYear() == 2019);
     const monthlyData = [];
     for(let i = 0; i < 13; i++) {
@@ -234,6 +216,7 @@ function groupData(data, switchkey, month) {
     }
     const yearvalues = yearlyData.map(x => x.value);
     let monthvalues = [];
+    let weekvalues = [];
     switch(month) {
         case 0:
             break;
@@ -277,6 +260,14 @@ function groupData(data, switchkey, month) {
             break;
     }
 
+    if(week == 0) {
+    } else {
+        console.log(monthlyData[month-1]);        
+        for(let item of monthlyData[month-1]) {
+            if(getNumberOfWeek(item.date) === week) weekvalues.push(item.value);
+        }
+    }
+
     switch (switchkey) {
         case 0:
             values = yearvalues;
@@ -284,6 +275,10 @@ function groupData(data, switchkey, month) {
             break;
         case 1:
             values = monthvalues;
+            resolution = 24;
+            break;
+        case 2:
+            values = weekvalues;
             resolution = 1;
             break;
         default:
@@ -310,7 +305,7 @@ function groupData(data, switchkey, month) {
 }
 
 function chartClickEvent(evt, element) {
-    if (!element || element.length == 0) return 0;
+    if (!element || element.length == 0) return -1;
     const keys = Object.keys(element[0]);
     let pIndex = 0;
     for (let key of keys) {
