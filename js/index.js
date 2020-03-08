@@ -1,9 +1,13 @@
 const chartDiv = document.getElementById("charts");
+const tableDiv = document.getElementById("table");
+setElementShown(tableDiv, false);
+
 let consumption = {};
 let metadata;
 let c;
 let comparer = "people";
 let resolution;
+
 let charts = {
     buildingCharts: [],
     other: []
@@ -57,8 +61,7 @@ function generateCharts() {
         const chart = drawChart(ctx,
             "line",
             null,
-            null,
-            {
+            null, {
                 onClick: function(evt) {
                     console.log('Clicked');
                     const element = chart.getElementAtEvent(evt);
@@ -115,8 +118,8 @@ function generateCharts() {
                     })
             
                     chart.update();*/
+                }
             }
-        }
         );
 
 
@@ -159,7 +162,7 @@ function generateData() {
                     apartments: 0
                 }
             }
-            
+
 
             weekBuildings[i].count++;
             weekBuildings[i].amount += grouped[i];
@@ -229,12 +232,12 @@ function drawChart(ctx, type, labels, datasets, options) {
 function groupData(data, switchkey, month) {
     const yearlyData = data.filter(x => x.date.getUTCFullYear() == 2019);
     const monthlyData = [];
-    for(let i = 0; i < 13; i++) {
+    for (let i = 0; i < 13; i++) {
         monthlyData[i] = yearlyData.filter(x => x.date.getUTCMonth() == i);
     }
     const yearvalues = yearlyData.map(x => x.value);
     let monthvalues = [];
-    switch(month) {
+    switch (month) {
         case 0:
             break;
         case 1:
@@ -266,7 +269,7 @@ function groupData(data, switchkey, month) {
             break;
         case 10:
             monthvalues = monthlyData[9].map(x => x.value);
-            break; 
+            break;
         case 11:
             monthvalues = monthlyData[10].map(x => x.value);
             break;
@@ -367,6 +370,8 @@ function changeChartData(value) {
 
             data = generateData();
             updateCharts(data);
+            setElementShown(chartDiv, true);
+            setElementShown(tableDiv, false);
 
             break;
         case "2":
@@ -374,6 +379,8 @@ function changeChartData(value) {
 
             data = generateData();
             updateCharts(data);
+            setElementShown(chartDiv, true);
+            setElementShown(tableDiv, false);
 
             break;
         case "3":
@@ -381,7 +388,14 @@ function changeChartData(value) {
 
             data = generateData();
             updateCharts(data);
+            setElementShown(chartDiv, true);
+            setElementShown(tableDiv, false);
 
+            break;
+
+        case "4":
+            setElementShown(chartDiv, false);
+            setElementShown(tableDiv, true);
             break;
     }
 
@@ -401,3 +415,69 @@ function showChart(index) {
 
     setElementShown(charts.buildingCharts[Number(index)].hostDiv, true);
 }
+
+const barcanvas = document.getElementById("bargraph");
+const barctx = barcanvas.getContext("2d");
+const bardata = [{
+    h: 1,
+    p: 26
+}, {
+    h: 2,
+    p: 10
+}, {
+    h: 3,
+    p: 30
+}, {
+    h: 4,
+    p: 10
+}, {
+    h: 5,
+    p: 29
+}, {
+    h: 6,
+    p: 34
+}, {
+    h: 7,
+    p: 20
+}, {
+    h: 8,
+    p: 18
+}, {
+    h: 9,
+    p: 18
+}, {
+    h: 10,
+    p: 28
+}, {
+    h: 11,
+    p: 30
+}, {
+    h: 12,
+    p: 22
+}, {
+    h: 13,
+    p: 39
+}]
+
+bardata.sort((a, b) => b.p - a.p);
+
+const barchart = new Chart(barctx, {
+    type: "bar",
+    data: {
+        labels: bardata.map(x => x.h),
+        datasets: [{
+            label: "Points",
+            data: bardata.map(x => x.p),
+            backgroundColor: ["rgba(255, 0, 0, 0.4)", "rgba(255, 120, 0, 0.4)", "rgba(0, 255, 0, 0.4)", null, null, null, null, null, null, "rgba(255, 120, 0, 0.4)", "rgba(255, 120, 0, 0.4)", "rgba(255, 0, 0, 0.4)", "rgba(255, 0, 0, 0.4)"]
+        }]
+    },
+    options: {
+        scales: {
+            yAxes: [{
+                ticks: {
+                    beginAtZero: true
+                }
+            }]
+        }
+    }
+})
