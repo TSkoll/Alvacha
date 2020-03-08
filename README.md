@@ -14,4 +14,4 @@ All of the team members but one were students for JAMK, the Jyväskylä Universi
 
 ## Demo
 A demo for Alvacha can be found here:   
-https://tskoll.github.io/conthrive-2020/
+https://tskoll.github.io/Alvacha/
