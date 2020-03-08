@@ -82,7 +82,7 @@ function generateCharts() {
                     console.log(getNumberOfWeek(pointDate));
 
                     const monthlyTotals = groupData(c, 2, pointDate.getUTCMonth() + 1, getNumberOfWeek(pointDate));
-                    chart.data.labels = Array.from(new Array(monthlyTotals.length - 1).keys());
+                    chart.data.labels = Array.from(new Array(monthlyTotals.length).keys());
                     chart.data.datasets.forEach(set => {
                         set.data.forEach(item => {
                             chart.data.datasets[0].data.pop();
@@ -96,6 +96,7 @@ function generateCharts() {
                     })
                     chart.update();
                     zoomFlag = true;
+            }
             }
         );
 
